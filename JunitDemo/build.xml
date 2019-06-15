@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project []>
+<project name="NewTours" default="usage" basedir=".">
+	<property environment="env" />
+	<property name="ws.home" value="${basedir}" />
+	<property name="ws.jars" value="C:\Users\Neel\Desktop\SeleniumTraining\Jars" />
+	<property name="test.dest" value="${ws.home}/build" />
+	<property name="test.src" value="${ws.home}/src" />
+	<property name="test.reportsDir" value="F:\Reports" />
+
+	<path id="testcase.path">
+	<pathelement location="${test.dest}"/>
+		<fileset dir="${ws.jars}">
+			<include name="*.jar"/>
+			</fileset>
+		</path>
+	<target name="setClasspath" unless="test.classpath">
+		<path id="classpath_jars">
+			<fileset dir="${ws.jars}" includes="*.jar" />
+		</path>
+		<pathconvert pathsep=";" property="test.classpath" refid="classpath_jars" />
+	</target>
+	<target name="usage">
+		<echo> "Ant is up and running";</echo>
+	</target>
+	<target name="init" depends="setClasspath">
+		<tstamp>
+			<format property="start.time" pattern="MM/dd/yyyy hh.mm **" />
+		</tstamp>
+		<condition property="ANT" value="${env.ANT_HOME}/bin/ant.bat" else="${env.ANT_HOME}/bin/ant">
+			<os family="windows" />
+		</condition>
+		<taskdef name="testng" classpath="${test.classpath}" classname="org.testng.TestNGAntTask" />
+	</target>
+
+
+	<target name="clean">
+		<delete dir="${test.dest}" />
+	</target>
+
+	<target name="compile" depends="init, clean">
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="${test.dest}" includes="**/*" />
+		</delete>
+		<echo message="making directory..." />
+		<mkdir dir="${test.dest}" />
+		<echo message="Classpath===: ${test.classpath}" />
+		<echo message="compiling..." />
+		<javac debug="true" destdir="${test.dest}" srcdir="${test.src}" target="1.8" classpath="${test.classpath}">
+		</javac>
+	</target>
+
+	<target name="run">
+		<mkdir dir="${test.reportsDir}"/>
+		<delete includeemptydirs="true" quiet="true">
+			
+		<fileset dir="${test.reportsDir}" includes="**/*"/>
+		</delete>
+		<java jar="${ws.jars}" fork="true" spawn="true"/>
+		<junit fork="yes" haltonfailure="no" printsummary="true">
+		<classpath refid="testcase.path"/>
+		<batchtest todir="${test.reportsDir}" fork="true">
+		<fileset dir="${test.dest}">
+		<include name="testPack/RunnerClass.class"/>
+		</fileset>
+		</batchtest>
+		<formatter type="xml"/>
+		<classpath refid="testcase.path"/>
+		</junit>
+	
+		<junitreport todir="${test.reportsDir}">
+		<fileset dir="${test.reportsDir}">
+		<include name="TEST-*.xml"/>
+		</fileset>
+		<report todir="${test.reportsDir}"/>
+		</junitreport>
+		</target>
+
+
+</project>
